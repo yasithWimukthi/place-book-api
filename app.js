@@ -1,8 +1,10 @@
+const fs = require('fs');
+
 const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
-
 require('dotenv').config()
+
 
 const placesRoutes = require('./routes/places-routes');
 const usersRoutes = require('./routes/users-routes');
@@ -15,8 +17,8 @@ app.use(bodyParser.json());
 app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader(
-      'Access-Control-Allow-Headers',
-      'Origin, X-Requested-With, Content-Type, Accept, Authorization'
+    'Access-Control-Allow-Headers',
+    'Origin, X-Requested-With, Content-Type, Accept, Authorization'
   );
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, DELETE');
 
@@ -32,6 +34,11 @@ app.use((req, res, next) => {
 });
 
 app.use((error, req, res, next) => {
+  if (req.file) {
+    fs.unlink(req.file.path, err => {
+      console.log(err);
+    });
+  }
   if (res.headerSent) {
     return next(error);
   }
@@ -40,13 +47,12 @@ app.use((error, req, res, next) => {
 });
 
 mongoose
-  .connect(process.env.CONNECTION_URL)
+  .connect(
+      process.env.CONNECTION_URL
+  )
   .then(() => {
     app.listen(5000);
-    console.log('connected')
   })
   .catch(err => {
     console.log(err);
-    console.log('not connected')
   });
-
